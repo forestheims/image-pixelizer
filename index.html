@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Image Pixelizer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 40px;
+    }
+    canvas {
+      border: 1px solid #ccc;
+      margin-top: 20px;
+    }
+    .controls {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Image Pixelizer</h1>
+  <div class="controls">
+    <input type="file" id="upload" accept="image/*">
+    <br><br>
+    <label for="pixelSize">Pixelation Level (block size): </label>
+    <input type="range" id="pixelSize" min="1" max="50" value="10">
+    <span id="pixelValue">10</span>
+  </div>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const upload = document.getElementById('upload');
+    const pixelSizeInput = document.getElementById('pixelSize');
+    const pixelValueDisplay = document.getElementById('pixelValue');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let image = new Image();
+
+    pixelSizeInput.addEventListener('input', () => {
+      pixelValueDisplay.textContent = pixelSizeInput.value;
+      if (image.src) {
+        pixelate();
+      }
+    });
+
+    upload.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        image = new Image();
+        image.onload = function() {
+          canvas.width = image.width;
+          canvas.height = image.height;
+          pixelate();
+        };
+        image.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function pixelate() {
+      const pixelSize = parseInt(pixelSizeInput.value, 10);
+
+      const tempCanvas = document.createElement('canvas');
+      const tempCtx = tempCanvas.getContext('2d');
+      
+      const scaledWidth = Math.ceil(canvas.width / pixelSize);
+      const scaledHeight = Math.ceil(canvas.height / pixelSize);
+      tempCanvas.width = scaledWidth;
+      tempCanvas.height = scaledHeight;
+
+      tempCtx.drawImage(image, 0, 0, scaledWidth, scaledHeight);
+
+      ctx.imageSmoothingEnabled = false;
+      
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(tempCanvas, 0, 0, scaledWidth, scaledHeight, 0, 0, canvas.width, canvas.height);
+    }
+  </script>
+</body>
+</html>
